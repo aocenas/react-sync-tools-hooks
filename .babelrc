@@ -1,13 +1,14 @@
 {
   "presets": [
-    ["env", {
+    ["@babel/env", {
       "targets": {
         "browsers": ["last 2 Chrome versions"]
       }
     }],
-    "react"
+    "@babel/preset-react"
   ],
   "plugins": [
-    "transform-object-rest-spread"
+    "@babel/plugin-proposal-object-rest-spread",
+    ["@babel/plugin-proposal-decorators", {"decoratorsBeforeExport": false}]
   ]
 }

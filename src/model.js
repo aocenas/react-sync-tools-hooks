@@ -1,6 +1,6 @@
-import { useContext, useMemo } from 'react'
+import React, { useMemo, useCallback } from 'react'
 import { registerReducer } from './model-redux'
-import { ReactReduxContext } from 'react-redux'
+import { useMappedState, useDispatch } from 'redux-react-hook'
 import {
   modelSetStateActionCreator,
   modelUpdateActionCreator,
@@ -31,35 +31,57 @@ export const makeModel = (name, actions, defaultState) => {
   }
 }
 
+const nullSelector = () => null
+const identity = (arg) => arg
+
+// NOTE: selector needs to be memoized
 export const useModel = (model, selector) => {
   selector =
     selector === null
-      ? () => null
+      ? nullSelector
       : selector === undefined
-      ? (state) => state
-      : selector
+        ? identity
+        : selector
 
-  // TODO: rerenders on each state change
-  // If so create context with just the store and subscribe manually
-  const { store, storeState } = useContext(ReactReduxContext)
-  // console.log('storeState', storeState)
-  const requestedState = selector(storeState.reagent[model.id] || model.defaultState)
+  const mapState = useCallback(
+    (state) =>
+      selector(
+        state.reagent[model.id] === undefined
+          ? model.defaultState
+          : state.reagent[model.id],
+      ),
+    [model, selector],
+  )
 
-  const modelActions = useMemo(() => mapModelActions(model, store), [store, model])
+  const requestedState = useMappedState(mapState)
+  const dispatch = useDispatch()
+
+  const modelActions = useMemo(() => mapModelActions(model, dispatch), [
+    model,
+    dispatch,
+  ])
 
   return [requestedState, modelActions]
 }
 
-const mapModelActions = (model, store) => {
+const mapModelActions = (model, dispatch) => {
   const actionsMapped = Object.keys(model.actions).reduce((acc, key) => {
     acc[key] = (...args) => {
-      store.dispatch(modelUpdateActionCreator(model.id, key, ...args))
+      dispatch(modelUpdateActionCreator(model.id, key, ...args))
     }
     return acc
   }, {})
 
   actionsMapped.setState = (funcOrObj) => {
-    modelSetStateActionCreator(model.id, funcOrObj)
+    dispatch(modelSetStateActionCreator(model.id, funcOrObj))
   }
   return actionsMapped
+}
+
+export const withModel = (model, stateSelector, actionsSelector = identity) => (WrappedComponent) => {
+  return (props) => {
+    const [state, actions] = useModel(model, stateSelector)
+    const selectedActions = actionsSelector(actions)
+    return <WrappedComponent {...props} {...state} {...selectedActions}/>
+  }
 }

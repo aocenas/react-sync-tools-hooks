@@ -5,10 +5,12 @@ export const modelSetStateActionCreator = (modelId, newStateOrFunc) => (
   dispatch,
   getState,
 ) => {
+
   let payload = newStateOrFunc
   if (typeof newStateOrFunc === 'function') {
     payload = newStateOrFunc(getState().reagent[modelId])
   }
+
   dispatch({
     type: [actionPrefix, modelId, 'setState'].join('/'),
     payload,
