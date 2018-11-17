@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import * as React from 'react'
 import { keyBy } from 'lodash'
 
 import { todosModel } from './todosModel'
@@ -6,6 +6,8 @@ import { TodoItem } from './TodoItem'
 import { buttonStyle } from './style'
 import * as TodosClient from './todosClient'
 import { useAction, useModel } from '../../src'
+
+const { useState, useEffect } = React
 
 export const TodoApp = () => {
   const [text, setText] = useState('')
