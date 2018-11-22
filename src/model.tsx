@@ -82,20 +82,23 @@ type ReduxStore = {
 }
 
 /**
- * Actions object returned to the caller. In addition setState action is
- * injected.
+ * Actions object returned to the caller. They loose the first state argument
+ * as that will be injected. In addition setState action is added to the set
+ * of action.
  */
-type MappedActions<A> = { [P in keyof A]: (...args: any[]) => void } & {
-  setState: (...args: any[]) => void
+type MappedActions<A, S> = { [P in keyof A]: (...args: any[]) => void } & {
+  setState: (args: SetStateArg<S>) => void
 }
 
 /**
- * HOC that will inject model state and model actions into the component.
- * @param model - Model instance from which to get the state and actions. To
- * reuse state use the same model instance on multiple places.
+ * Hook that will return model state and model actions.
+ * @param model - Model instance returned by makeModel from which to get the
+ * state and actions. To reuse state use the same model instance on multiple
+ * places.
  * @param selector - Function where you can return just a portion of the model
- * state and reduce number of updates. For example if your model is map of
- * objects you can select only one of them and get updates only when it changes.
+ * state and by that reduce number of updates. For example if your model is map
+ * of objects you can select only one of them and get updates only when it
+ * changes.
  * If you do not specify selector, whole model is returned, if you pass null
  * you won't be updated on model change. Selector needs to be memoized (for
  * example with useCallback) to prevent infinite update loop.
@@ -103,7 +106,7 @@ type MappedActions<A> = { [P in keyof A]: (...args: any[]) => void } & {
 export const useModel = <S, A extends ActionObject<S>, MappedState = any>(
   model: ModelInstance<S, A>,
   selector?: ((state: S) => MappedState) | null,
-): [MappedState | null, MappedActions<A>] => {
+): [MappedState | null, MappedActions<A, S>] => {
   // Handle null or undefined selector here. Make sure the selected functions
   // are constant.
   const realSelector = (selector === null
@@ -147,7 +150,7 @@ type SetStateArg<S> = S | ((state: S) => void)
 const mapModelActions = <S, A extends ActionObject<S>>(
   model: ModelInstance<S, A>,
   dispatch: ThunkDispatch<S, undefined, any>,
-): MappedActions<A> => {
+): MappedActions<A, S> => {
   const actionsMapped = Object.keys(model.actions).reduce(
     (acc, key) => {
       acc[key] = (...args: any[]) => {
@@ -156,7 +159,7 @@ const mapModelActions = <S, A extends ActionObject<S>>(
       return acc
     },
     {} as any,
-  ) as MappedActions<A>
+  ) as MappedActions<A, S>
 
   actionsMapped.setState = (funcOrObj: SetStateArg<S>) => {
     dispatch(modelSetStateActionCreator(model.id, funcOrObj))
@@ -183,11 +186,13 @@ export const withModel = <
     props: Subtract<P, MappedState & NewMappedActions>,
   ) => MappedState,
   actionsSelector: (
-    actions: MappedActions<A>,
+    actions: MappedActions<A, S>,
     props: Subtract<P, MappedState & NewMappedActions>,
   ) => NewMappedActions = identity,
 ) => (WrappedComponent: React.ComponentType<P>) => {
   return (props: Subtract<P, MappedState & NewMappedActions>) => {
+    // As we do not know what props do the selectors use, we need to recreate
+    // the final state selector every time they change.
     const changeToken = usePropsChangedToken(props)
     const stateSelectorMemoized = useCallback(
       (state: S) => stateSelector(state, props),

@@ -43,7 +43,7 @@ const usePrevious = (value: any) => {
 export const usePropsChangedToken = (props: object) => {
   const prevProps = usePrevious(props)
   const token = useRef<boolean>(true)
-  const areEqual = areEqualShallow(prevProps, props)
+  const areEqual = prevProps ? areEqualShallow(prevProps, props) : false
   const newTokenValue = areEqual ? token.current : !token.current
   useEffect(() => {
     token.current = newTokenValue
