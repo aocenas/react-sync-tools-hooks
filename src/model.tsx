@@ -169,9 +169,9 @@ const mapModelActions = <S, A extends ActionObject<S>>(
 
 /**
  * HOC with same functionality as useModel hook.
- * @param model
- * @param stateSelector
- * @param actionsSelector
+ * @param model - Model instance created by makeModel.
+ * @param stateSelector - Function mapping model state to props.
+ * @param actionsSelector - Function mapping model actions to props.
  */
 export const withModel = <
   S,
