@@ -1,7 +1,8 @@
-import React, { useCallback } from 'react'
+import React = require('react')
 import { buttonStyle } from './style'
-import { todosModel } from './todosModel'
-import { useAction, useModel } from '../../src'
+import { todosModel, Todos } from './todosModel'
+import { useModel } from '../../src'
+const { useCallback } = React
 
 interface Props {
   todoId: number | string
@@ -11,7 +12,15 @@ export const TodoItem = ({ todoId }: Props) => {
   const [
     todo,
     { updateTodoText, deleteTodo, undoTodo, completeTodo },
-  ] = useModel(todosModel, useCallback((state) => state[todoId], [todoId]))
+  ] = useModel(
+    todosModel,
+    useCallback((state: Todos) => state[todoId], [todoId]),
+  )
+
+  if (!todo) {
+    return null
+  }
+
   return (
     <div
       style={{
