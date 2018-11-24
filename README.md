@@ -168,7 +168,7 @@ export const withAction = <P extends object>(
   actionFunc: HocActionFunc<P>,
   afterFunc?: HocAfterFunc<P>,
   options?: any,
-) => (WrappedComponent: React.ComponentType<P>) => {
+) => (WrappedComponent: React.ComponentType<P>)
   
 /**
  * Functions similar to those provided to the useAcions hook but with additional
@@ -185,7 +185,6 @@ export type HocAfterFunc<P> = (
   props: P,
   ...args: any[]
 ) => void
-}
 
 ```
 
