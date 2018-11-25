@@ -101,6 +101,8 @@ export const useAction = <T extends any = any>(
       // Just in case the function does not return promise
       Promise.resolve(actionFunc(tokenRef.current.token, ...args))
         .then((response) => {
+          // TODO: in case function did not use cancelToken we can be here after
+          //  the component unmount
           setData({ isLoading: false, response })
           if (afterFunc) {
             afterFunc(response, ...args)
