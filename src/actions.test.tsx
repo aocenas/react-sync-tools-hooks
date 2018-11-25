@@ -8,9 +8,14 @@ const setupComponent = (
 ) => {
   const Component = jest.fn(() => null)
   const mockAction = jest.fn(mockActionImpl)
-  const WrappedComponent = withAction('mock', mockAction, undefined, {
-    someOption: true,
-  })(Component)
+  const WrappedComponent: React.ComponentType<{ id: number }> = withAction(
+    'mock',
+    mockAction,
+    undefined,
+    {
+      someOption: true,
+    },
+  )(Component)
 
   // Hooks do not work with shallow rendering
   const wrapper = mount(<WrappedComponent id={1} />)

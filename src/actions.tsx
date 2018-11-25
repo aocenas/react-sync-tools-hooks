@@ -1,5 +1,6 @@
 import * as React from 'react'
 import axios, { CancelTokenSource, CancelToken, AxiosResponse } from 'axios'
+import { Omit } from './utils'
 
 const { useState, useEffect, useRef } = React
 
@@ -183,13 +184,21 @@ export type HocAfterFunc<P> = (
  * @param afterFunc
  * @param options
  */
-export const withAction = <P extends object>(
-  actionName = 'action',
-  actionFunc: HocActionFunc<P>,
-  afterFunc?: HocAfterFunc<P>,
+export const withAction = <
+  ActionName extends keyof any,
+  ActionFuncProps extends object
+>(
+  actionName: ActionName,
+  actionFunc: HocActionFunc<ActionFuncProps>,
+  afterFunc?: HocAfterFunc<ActionFuncProps>,
   options?: any,
-) => (WrappedComponent: React.ComponentType<P>) => {
-  return (props: any) => {
+) => <
+  InnerProps extends object,
+  OuterProps extends Omit<InnerProps, ActionName> & ActionFuncProps
+>(
+  WrappedComponent: React.ComponentType<InnerProps>,
+): React.ComponentType<OuterProps> => {
+  return (props: OuterProps) => {
     const action = useAction(
       (cancelToken, ...args) => actionFunc(cancelToken, props, ...args),
       afterFunc
