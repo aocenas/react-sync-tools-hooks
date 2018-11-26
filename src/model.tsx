@@ -178,19 +178,19 @@ export const withModel = <
   A extends ActionObject<S>,
   MappedState extends {},
   NewMappedActions extends {},
-  P
+  SelectorProps extends {},
 >(
   model: ModelInstance<S, A>,
   stateSelector: (
     state: S,
-    props: Subtract<P, MappedState & NewMappedActions>,
+    props: SelectorProps,
   ) => MappedState,
   actionsSelector: (
     actions: MappedActions<A, S>,
-    props: Subtract<P, MappedState & NewMappedActions>,
+    props: SelectorProps,
   ) => NewMappedActions = identity,
-) => (WrappedComponent: React.ComponentType<P>) => {
-  return (props: Subtract<P, MappedState & NewMappedActions>) => {
+) => <P extends {}>(WrappedComponent: React.ComponentType<P>) => {
+  return (props: Subtract<P, MappedState & NewMappedActions> & SelectorProps) => {
     // As we do not know what props do the selectors use, we need to recreate
     // the final state selector every time they change.
     const changeToken = usePropsChangedToken(props)
