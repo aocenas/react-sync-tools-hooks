@@ -1,7 +1,8 @@
 import { startsWith } from 'lodash'
 import { Dispatch, Action } from 'redux'
 
-const actionPrefix = '@reagent/modelUpdate'
+const actionPrefix = '@react-sync-tools/modelUpdate'
+export const storeKey = 'react-sync-tools-models'
 
 /**
  * Action creator that allows to either completely replace the model state or
@@ -15,7 +16,7 @@ export const modelSetStateActionCreator = <S extends any>(
 ) => (dispatch: Dispatch, getState: () => S) => {
   let payload = newStateOrFunc
   if (typeof newStateOrFunc === 'function') {
-    payload = newStateOrFunc(getState().reagent[modelId])
+    payload = newStateOrFunc(getState()[storeKey][modelId])
   }
   dispatch({
     type: [actionPrefix, modelId, 'setState'].join('/'),
@@ -41,11 +42,11 @@ export const modelUpdateActionCreator = (
   }
 }
 
-interface ReagentAction extends Action {
+interface RSTAction extends Action {
   payload: any
 }
 
-interface ReagentState {
+interface RSTState {
   [modelId: string]: any
 }
 
@@ -55,7 +56,7 @@ interface ReagentState {
  * @param state
  * @param action
  */
-export const reducer = (state: ReagentState = {}, action: ReagentAction) => {
+export const reducer = (state: RSTState = {}, action: RSTAction) => {
   if (!startsWith(action.type, actionPrefix)) {
     return state
   }

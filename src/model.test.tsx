@@ -5,7 +5,7 @@ import thunk from 'redux-thunk'
 import { StoreProvider } from 'redux-react-hook'
 
 import { withModel, makeModel } from './model'
-import { reducer } from './model-redux'
+import { reducer, storeKey } from './model-redux'
 
 const userModel = makeModel(
   'user',
@@ -19,7 +19,7 @@ const userModel = makeModel(
 
 const setupApp = (): [any, any, any] => {
   const store = createStore(
-    combineReducers({ reagent: reducer }),
+    combineReducers({ [storeKey]: reducer }),
     applyMiddleware(thunk),
   )
 

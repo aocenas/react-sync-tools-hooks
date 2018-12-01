@@ -1,8 +1,8 @@
-# Reagent-hooks
+# React Sync Tools Hooks
 
 A set of hooks to help with state management and data fetching. Main goals are
 ease of use and incremental composability while building on top of Redux.
-This is a reimplementation of reagent HOCs as hooks.
+This is a reimplementation of react-sync-tools HOCs as hooks.
 
 ## Hooks:
 

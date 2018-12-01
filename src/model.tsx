@@ -7,6 +7,7 @@ import {
   modelSetStateActionCreator,
   modelUpdateActionCreator,
   registerReducer,
+  storeKey,
 } from './model-redux'
 import { Subtract, usePropsChangedToken } from './utils'
 
@@ -78,7 +79,7 @@ export const makeModel = <S extends any, A extends ActionObject<S>>(
 const nullSelector = () => null
 
 type ReduxStore = {
-  reagent: { [modelId: string]: any }
+  [storeKey]: { [modelId: string]: any }
 }
 
 /**
@@ -118,9 +119,9 @@ export const useModel = <S, A extends ActionObject<S>, MappedState = any>(
   const mapState = useCallback(
     (state: ReduxStore) =>
       realSelector(
-        state.reagent[model.id] === undefined
+        state[storeKey][model.id] === undefined
           ? model.defaultState
-          : state.reagent[model.id],
+          : state[storeKey][model.id],
       ),
     [model, selector],
   )
@@ -178,19 +179,18 @@ export const withModel = <
   A extends ActionObject<S>,
   MappedState extends {},
   NewMappedActions extends {},
-  SelectorProps extends {},
+  SelectorProps extends {}
 >(
   model: ModelInstance<S, A>,
-  stateSelector: (
-    state: S,
-    props: SelectorProps,
-  ) => MappedState,
+  stateSelector: (state: S, props: SelectorProps) => MappedState,
   actionsSelector: (
     actions: MappedActions<A, S>,
     props: SelectorProps,
   ) => NewMappedActions = identity,
 ) => <P extends {}>(WrappedComponent: React.ComponentType<P>) => {
-  return (props: Subtract<P, MappedState & NewMappedActions> & SelectorProps) => {
+  return (
+    props: Subtract<P, MappedState & NewMappedActions> & SelectorProps,
+  ) => {
     // As we do not know what props do the selectors use, we need to recreate
     // the final state selector every time they change.
     const changeToken = usePropsChangedToken(props)
