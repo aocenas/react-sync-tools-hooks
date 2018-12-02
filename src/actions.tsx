@@ -208,36 +208,3 @@ export const withAction = <
     return <WrappedComponent {...props} {...{ [actionName]: action }} />
   }
 }
-
-// export const withAction = <A extends keyof any, B extends object>(
-//   actionName: A,
-//   actionFunc: (props: B, ...args: any[]) => Promise<any>,
-// ) => <
-//   InnerProps extends object,
-//   // The only change is here that OuterProps has '& B'
-//   OuterProps extends Omit<InnerProps, A> & B
-// >(
-//   WrappedComponent: React.ComponentType<InnerProps>,
-// ): React.ComponentType<OuterProps> => {
-//   return (props: OuterProps) => {
-//     const action = useAction((...args) => {
-//       return actionFunc(props, ...args)
-//     })
-//     return <WrappedComponent {...props} {...{ [actionName]: action }} />
-//   }
-// }
-//
-// // Usage:
-// class Component extends React.Component<{ id: number; loadData: any }> {}
-// const ComponentWithAction = withAction(
-//   'loadData',
-//   // somethingElse here does not trigger the error which would be nice but
-//   // probably not possible
-//   (props: { id: number; somethingElse: number }) => API.loadData(props.id),
-// )(Component)
-// // Here the ComponentWithAction is React.ComponentType<{id: number, somethingElse: number }>
-// // and so TS correctly errors that somethingElse is missing
-// render(<ComponentWithAction id={1} />)
-// // Strangely this is correct but some Webstorm inspection thinks loadData is
-// // required and missing here. So far first time I see Webstorm trip with TS.
-// render(<ComponentWithAction id={1} somethingElse={3} />)
