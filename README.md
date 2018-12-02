@@ -4,6 +4,49 @@ A set of hooks to help with state management and data fetching. Main goals are
 ease of use and incremental composability while building on top of Redux.
 This is a reimplementation of react-sync-tools HOCs as hooks.
 
+React hooks are still experimental and this needs React v16.7.0-alpha,
+see https://reactjs.org/docs/hooks-intro.html
+
+## Installation
+
+```bash
+yarn install react-sync-tools-hooks
+# install peer dependencies if you do not have the already
+yarn install axios react@16.7.0-alpha.0 react-redux redux redux-thunk
+```
+
+### Setup redux store
+```javascript
+import { reducer, StoreProvider, storeKey } from 'react-sync-tools-hooks'
+import { Provider } from 'react-redux'
+import { createStore, combineReducers, applyMiddleware } from 'redux'
+import thunk from 'redux-thunk'
+
+const store = createStore(
+  combineReducers({
+      // You need to specify our reducer here. 
+      [storeKey]: reducer,
+      // You can also add your own reducer here so that state for models
+      // and your own state will coexist. 
+      someOtherState: someReducer
+  }),
+  applyMiddleware(thunk)
+)
+
+render(
+  // This double wrapping with 2 providers is needed because redux provider
+  // by default does not work with hooks properly. If you do not use redux
+  // without our models you can skip the <Provider store={store}>.
+  <Provider store={store}>
+    <StoreProvider value={store}>
+      <YourApp />
+    </StoreProvider>
+  </Provider>,
+  document.querySelector('#app'),
+)
+
+```
+
 ## Hooks:
 
 ### useAction
