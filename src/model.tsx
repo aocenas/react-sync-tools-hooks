@@ -9,7 +9,13 @@ import {
   registerReducer,
   storeKey,
 } from './model-redux'
-import { Subtract, usePropsChangedToken } from './utils'
+import {
+  Subtract,
+  usePropsChangedToken,
+  Matching,
+  GetProps,
+  Omit,
+} from './utils'
 
 const { useMemo, useCallback } = React
 
@@ -179,17 +185,29 @@ export const withModel = <
   A extends ActionObject<S>,
   MappedState extends {},
   NewMappedActions extends {},
-  SelectorProps extends {}
+  ActionSelectorProps extends {},
+  StateSelectorProps extends {}
 >(
   model: ModelInstance<S, A>,
-  stateSelector: (state: S, props: SelectorProps) => MappedState,
+  stateSelector: (state: S, props: StateSelectorProps) => MappedState,
   actionsSelector: (
     actions: MappedActions<A, S>,
-    props: SelectorProps,
+    props: ActionSelectorProps,
   ) => NewMappedActions = identity,
-) => <P extends {}>(WrappedComponent: React.ComponentType<P>) => {
+) => <
+  C extends React.ComponentType<
+    Matching<NewMappedActions, Matching<MappedState, GetProps<C>>>
+  >
+>(
+  WrappedComponent: C,
+) => {
   return (
-    props: Subtract<P, MappedState & NewMappedActions> & SelectorProps,
+    props: JSX.LibraryManagedAttributes<
+      C,
+      Omit<Omit<GetProps<C>, keyof NewMappedActions>, MappedState>
+    > &
+      ActionSelectorProps &
+      StateSelectorProps,
   ) => {
     // As we do not know what props do the selectors use, we need to recreate
     // the final state selector every time they change.
@@ -200,6 +218,11 @@ export const withModel = <
     )
     const [state, actions] = useModel(model, stateSelectorMemoized)
     const selectedActions = actionsSelector(actions, props)
-    return <WrappedComponent {...props} {...state} {...selectedActions} />
+    const enhancedProps: any = {
+      ...props,
+      ...state,
+      ...selectedActions,
+    }
+    return <WrappedComponent {...enhancedProps} />
   }
 }

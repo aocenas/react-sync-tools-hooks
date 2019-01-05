@@ -1,8 +1,16 @@
 // https://medium.com/@jrwebdev/react-higher-order-component-patterns-in-typescript-42278f7590fb
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, ComponentType } from 'react'
 
 export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>
 export type Subtract<T, K> = Omit<T, keyof K>
+export type GetProps<C> = C extends ComponentType<infer P> ? P : never
+export type Matching<InjectedProps, DecorationTargetProps> = {
+  [P in keyof DecorationTargetProps]: P extends keyof InjectedProps
+    ? InjectedProps[P] extends DecorationTargetProps[P]
+      ? DecorationTargetProps[P]
+      : InjectedProps[P]
+    : DecorationTargetProps[P]
+}
 
 const areEqualShallow = (
   a: { [key: string]: any },
@@ -51,3 +59,18 @@ export const usePropsChangedToken = (props: object) => {
 
   return newTokenValue
 }
+
+// const f = <B extends keyof any, C extends object>(arg: B, fn: (props: C) => void) => <A extends Record<B, any> & C>(obj: A): Omit<A, B> => {
+//   fn(obj)
+//   delete obj[arg]
+//   return obj
+// }
+// const a = f('test', (props: { another: number }) => {})
+// // TS error, another: number is missing which is good
+// const b = a({ test: 1 })
+//
+// const d = a({ test: 1, another: 1 })
+// // test does not exist which is good
+// const c = d.test
+
+

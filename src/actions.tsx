@@ -1,6 +1,6 @@
 import * as React from 'react'
 import axios, { CancelTokenSource, CancelToken, AxiosResponse } from 'axios'
-import { Omit } from './utils'
+import { GetProps, Matching, Omit } from './utils'
 
 const { useState, useEffect, useRef } = React
 
@@ -192,12 +192,16 @@ export const withAction = <
   afterFunc?: HocAfterFunc<ActionFuncProps>,
   options?: any,
 ) => <
-  InnerProps extends object,
-  OuterProps extends Omit<InnerProps, ActionName> & ActionFuncProps
+  C extends React.ComponentType<
+    Matching<{ [P in ActionName]: ActionObject }, GetProps<C>>
+  >
 >(
-  WrappedComponent: React.ComponentType<InnerProps>,
-): React.ComponentType<OuterProps> => {
-  return (props: OuterProps) => {
+  WrappedComponent: C,
+) => {
+  return (
+    props: JSX.LibraryManagedAttributes<C, Omit<GetProps<C>, ActionName>> &
+      ActionFuncProps,
+  ) => {
     const action = useAction(
       (cancelToken, ...args) => actionFunc(cancelToken, props, ...args),
       afterFunc
@@ -205,6 +209,11 @@ export const withAction = <
         : undefined,
       options,
     )
-    return <WrappedComponent {...props} {...{ [actionName]: action }} />
+
+    const enhancedProps: any = {
+      ...props,
+      [actionName]: action,
+    }
+    return <WrappedComponent {...enhancedProps} />
   }
 }
